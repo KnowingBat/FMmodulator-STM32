@@ -48,11 +48,17 @@
 typedef enum{
 	init = 0,
 	run,
-	stop
+	stop,
+	reset
 }AppState;
 
-AppState appState = init;
+typedef struct{
+	//float fSampling;
+	uint32_t fCentral;
+	uint32_t fRange;
+} Signal;
 
+AppState appState = init;
 char txBuff[200];
 
 /* USER CODE END PV */
@@ -60,7 +66,9 @@ char txBuff[200];
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+void LEDToggling(GPIO_TypeDef *LEDPort, uint16_t LEDPin, uint32_t mstime);
+void resetSignal(Signal sig);
+void LEDFixed(GPIO_TypeDef *LEDPort, uint16_t LEDPin);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -76,6 +84,16 @@ void LEDToggling(GPIO_TypeDef *LEDPort, uint16_t LEDPin, uint32_t mstime){
 	}
 }
 
+void LEDFixed(GPIO_TypeDef *LEDPort, uint16_t LEDPin){
+	HAL_GPIO_WritePin(LEDPort, LEDPin, GPIO_PIN_SET);
+}
+
+void resetSignal(Signal sig){
+	sig.fCentral = 0;
+	sig.fRange = 0;
+	//sig.fSampling = 0;
+}
+
 
 
 /* USER CODE END 0 */
@@ -87,6 +105,13 @@ void LEDToggling(GPIO_TypeDef *LEDPort, uint16_t LEDPin, uint32_t mstime){
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+  Signal sig = {
+		  .fCentral = 0,
+		  .fRange = 0,
+		  //.fSampling = 0
+		  };
+
+  resetSignal(sig);
 
   /* USER CODE END 1 */
 
@@ -112,7 +137,6 @@ int main(void)
   MX_DMA_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -126,14 +150,29 @@ int main(void)
 	switch(appState){
 		case init:
 			LEDToggling(LD2_GPIO_Port, LD2_Pin, 500);
+			//wait for settings via UART
+			//HAL_UART_Receive(&huart2, rxBuff, , )
 
 			break;
 		case run:
+			LEDFixed(LD2_GPIO_Port, LD2_Pin);
 
 			break;
 		case stop:
 
 			break;
+		case reset:
+			// Stop PWM output
+			if(HAL_TIM_PWM_Stop_IT(&htim3, TIM_CHANNEL_1) != HAL_OK){
+				// handle error
+			}
+
+			// Reset signal
+			resetSignal(sig);
+			appState = init;
+			break;
+	    //case error:
+		//	break;
 	}
   }
   /* USER CODE END 3 */
@@ -189,7 +228,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
   static uint8_t prevState = 0;
   uint8_t newState;
   static uint32_t startTime = 0;
-  uint32_t currentTime;
+  uint32_t endTime;
 
   if(GPIO_Pin != B1_Pin)
 	return;
@@ -201,8 +240,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
   } else if(newState == 0 && prevState == 1) {
 	endTime = HAL_GetTick();
 	if((endTime - startTime) > 1000) //return to init
-
-
+		appState = reset;
+	else appstate = (appstate == stop) ? start:stop;
   }
 
   prevState = newState;
