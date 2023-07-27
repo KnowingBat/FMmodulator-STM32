@@ -1,6 +1,5 @@
-Core/Application/Messages/messages.o: \
- ../Core/Application/Messages/messages.c \
- C:/Users/David/STM32CubeIDE/workspace_1.8.0/FMmodulator-STM32/Core/Inc/Application/Messages/messages.h \
+Core/Application/Working/working.o: ../Core/Application/Working/working.c \
+ C:/Users/David/STM32CubeIDE/workspace_1.8.0/FMmodulator-STM32/Core/Inc/Application/Working/working.h \
  ../Core/Inc/main.h ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -28,10 +27,9 @@ Core/Application/Messages/messages.o: \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Core/Inc/usart.h ../Core/Inc/main.h
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 
-C:/Users/David/STM32CubeIDE/workspace_1.8.0/FMmodulator-STM32/Core/Inc/Application/Messages/messages.h:
+C:/Users/David/STM32CubeIDE/workspace_1.8.0/FMmodulator-STM32/Core/Inc/Application/Working/working.h:
 
 ../Core/Inc/main.h:
 
@@ -90,7 +88,3 @@ C:/Users/David/STM32CubeIDE/workspace_1.8.0/FMmodulator-STM32/Core/Inc/Applicati
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
-
-../Core/Inc/usart.h:
-
-../Core/Inc/main.h:

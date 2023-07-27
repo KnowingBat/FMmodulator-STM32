@@ -48,6 +48,8 @@
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/ST/STM32F4xx/Include"/>
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Include"/>
 									<listOptionValue builtIn="false" value="/home/davide/STM32CubeIDE/workspace_1.7.0/FMmodulator/Core/Inc/Application/Messages"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\David\STM32CubeIDE\workspace_1.8.0\FMmodulator-STM32\Core\Inc\Application\Working&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Users\David\STM32CubeIDE\workspace_1.8.0\FMmodulator-STM32\Core\Inc\Application\Messages&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.45390412" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>

@@ -35,6 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define F_CLOCK			84_000_000UL //84MHz
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -47,6 +48,7 @@
 /* USER CODE BEGIN PV */
 typedef enum{
 	init = 0,
+	setup,
 	run,
 	stop,
 	reset
@@ -105,6 +107,9 @@ void resetSignal(Signal sig){
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	int periodFreqMin, periodFreqMax;
+	float spaceSample;
+
   Signal sig = {
 		  .fCentral = 0,
 		  .fRange = 0,
@@ -152,6 +157,22 @@ int main(void)
 			LEDToggling(LD2_GPIO_Port, LD2_Pin, 500);
 			//wait for settings via UART
 			//HAL_UART_Receive(&huart2, rxBuff, , )
+
+			// Construct the DMA array with the period values
+
+			break;
+		case setup:
+			// Setup
+			periodFreqMax = F_CLOCK/(sig.fCentral + sig.fRange);
+			periodFreqMin = F_CLOCK/(sig.fCentral - sig.fRange);
+			spaceSample = (float)periodFreqMax/periodFreqMin;
+
+			for(int i=0;i<)
+			// Map the values
+
+
+
+
 
 			break;
 		case run:
@@ -241,7 +262,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	endTime = HAL_GetTick();
 	if((endTime - startTime) > 1000) //return to init
 		appState = reset;
-	else appstate = (appstate == stop) ? start:stop;
+	else appState = (appState == stop) ? run:stop;
   }
 
   prevState = newState;
