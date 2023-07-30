@@ -31,11 +31,17 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#define F_CLOCK			84000000//84MHz
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+typedef struct{
+	//float fSampling;
+	uint32_t fCentral; // Carrier frequency in kHz
+	uint32_t fRange; // Range frequency in kHz
+	uint32_t fFreq; // Frequency of the sinusoid in Hz
+}Signal;
 
 /* USER CODE END ET */
 

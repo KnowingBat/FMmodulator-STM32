@@ -36,7 +36,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define F_CLOCK			84_000_000UL //84MHz
+#define DEBUG			1
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -55,17 +55,11 @@ typedef enum{
 	reset
 }AppState;
 
-typedef struct{
-	//float fSampling;
-	uint32_t fCentral; // in kHz
-	uint32_t fRange; // in kHz
-	uint32_t fFreq; // in Hz
-} Signal;
-
 AppState appState = init;
 char txBuff[200];
 static uint8_t flFirst = 1;
 static double tSample;
+uint32_t freqArray[N_POINTS] = {0};
 
 /* USER CODE END PV */
 
@@ -73,8 +67,9 @@ static double tSample;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void LEDToggling(GPIO_TypeDef *LEDPort, uint16_t LEDPin, uint32_t mstime);
-void resetSignal(Signal sig);
 void LEDFixed(GPIO_TypeDef *LEDPort, uint16_t LEDPin);
+static void resetSignal(Signal sig);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -94,14 +89,12 @@ void LEDFixed(GPIO_TypeDef *LEDPort, uint16_t LEDPin){
 	HAL_GPIO_WritePin(LEDPort, LEDPin, GPIO_PIN_SET);
 }
 
-void resetSignal(Signal sig){
+static void resetSignal(Signal sig){
 	sig.fCentral = 0;
 	sig.fRange = 0;
 	sig.fFreq = 0;
 	//sig.fSampling = 0;
 }
-
-
 
 /* USER CODE END 0 */
 
@@ -112,14 +105,17 @@ void resetSignal(Signal sig){
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	int periodFreqMin, periodFreqMax;
-	float spaceSample;
 
   Signal sig = {
   		.fFreq = 0,
 		  .fCentral = 0,
 		  .fRange = 0
 		  };
+
+  double fullSin[N_POINTS];
+  double sin[N_POINTS/4];
+  double cos[N_POINTS/4];
+
 
   resetSignal(sig);
 
@@ -147,6 +143,11 @@ int main(void)
   MX_DMA_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
+
+  // Format the sin
+  computeSinCos(sin, cos, N_POINTS/4);
+  formatSin(fullSin, sin, cos);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -184,13 +185,18 @@ int main(void)
 
 			break;
 		case setup:
-			// Setup
-			periodFreqMax = F_CLOCK/(sig.fCentral + sig.fRange);
-			periodFreqMin = F_CLOCK/(sig.fCentral - sig.fRange);
+			// In freqArray are stored all the period values for PWM
+			convertToPWMlogic(freqArray, fullSin, sig, N_POINTS);
 
-			// Setup samples for sampling timer
-			tSample = 1/(N_POINTS * sig.fFreq);
+			// Compute refresh rate for sampling timer
+			tSample = F_CLOCK/(N_POINTS * sig.fFreq); //20Hz -> 4101 --- 20kHz -> 4 refresh rate
+			// Set this refresh rate to TIMn dedicated to sampling
+			__HAL_TIM_SET_AUTORELOAD(&htim4, tSample);
 
+			#ifdef DEBUG
+			// To avoid warnings
+				UNUSED(tSample);
+			#endif
 			// Setup
 			//spaceSample = (float)periodFreqMax/periodFreqMin;
 
