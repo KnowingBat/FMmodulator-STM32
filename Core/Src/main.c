@@ -22,6 +22,7 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include "working.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -56,12 +57,15 @@ typedef enum{
 
 typedef struct{
 	//float fSampling;
-	uint32_t fCentral;
-	uint32_t fRange;
+	uint32_t fCentral; // in kHz
+	uint32_t fRange; // in kHz
+	uint32_t fFreq; // in Hz
 } Signal;
 
 AppState appState = init;
 char txBuff[200];
+static uint8_t flFirst = 1;
+static double tSample;
 
 /* USER CODE END PV */
 
@@ -93,6 +97,7 @@ void LEDFixed(GPIO_TypeDef *LEDPort, uint16_t LEDPin){
 void resetSignal(Signal sig){
 	sig.fCentral = 0;
 	sig.fRange = 0;
+	sig.fFreq = 0;
 	//sig.fSampling = 0;
 }
 
@@ -111,9 +116,9 @@ int main(void)
 	float spaceSample;
 
   Signal sig = {
+  		.fFreq = 0,
 		  .fCentral = 0,
-		  .fRange = 0,
-		  //.fSampling = 0
+		  .fRange = 0
 		  };
 
   resetSignal(sig);
@@ -155,24 +160,39 @@ int main(void)
 	switch(appState){
 		case init:
 			LEDToggling(LD2_GPIO_Port, LD2_Pin, 500);
-			//wait for settings via UART
-			//HAL_UART_Receive(&huart2, rxBuff, , )
+			if(flFirst != 0){
+				// Send UART message for fFreq
 
-			// Construct the DMA array with the period values
+				flFirst = 0;
+			}
+
+			// Wait here for settings via UART
+			//HAL_UART_Receive(&huart2, rxBuff, , )
+			if(sig.fFreq == 0)
+				break;
+
+			// Send UART message for fCentral
+
+			if(sig.fCentral == 0)
+				break;
+
+			// Send UART message for fRange
+
+			if(sig.fRange == 0)
+				break;
+
 
 			break;
 		case setup:
 			// Setup
 			periodFreqMax = F_CLOCK/(sig.fCentral + sig.fRange);
 			periodFreqMin = F_CLOCK/(sig.fCentral - sig.fRange);
-			spaceSample = (float)periodFreqMax/periodFreqMin;
 
-			for(int i=0;i<)
-			// Map the values
+			// Setup samples for sampling timer
+			tSample = 1/(N_POINTS * sig.fFreq);
 
-
-
-
+			// Setup
+			//spaceSample = (float)periodFreqMax/periodFreqMin;
 
 			break;
 		case run:
