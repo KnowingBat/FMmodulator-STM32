@@ -23,6 +23,7 @@
 #include "usart.h"
 #include "gpio.h"
 #include "working.h"
+#include "messages.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -105,6 +106,7 @@ static void resetSignal(Signal sig){
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+  uint32_t value;
 
   Signal sig = {
   		.fFreq = 0,
@@ -161,16 +163,31 @@ int main(void)
 	switch(appState){
 		case init:
 			LEDToggling(LD2_GPIO_Port, LD2_Pin, 500);
-			if(flFirst != 0){
-				// Send UART message for fFreq
+			messageRoutine(&sig);
 
-				flFirst = 0;
+
+			if(request == 2){
+
+
+				if(value < MIN_FREQ || value > MAX_FREQ){
+					//HAL_UART_Trasmit(&huart2, msgErr);
+					break;
+				}
+				request++;
+			}
+
+			if(request == 3){
+
+
+
 			}
 
 			// Wait here for settings via UART
-			//HAL_UART_Receive(&huart2, rxBuff, , )
-			if(sig.fFreq == 0)
+			HAL_UART_Receive(&huart2, rxBuff, 10, 30);
+			if(sig.fFreq == 0){
+
 				break;
+			}
 
 			// Send UART message for fCentral
 
