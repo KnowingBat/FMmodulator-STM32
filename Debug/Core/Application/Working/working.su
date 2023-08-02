@@ -1,3 +1,0 @@
-working.c:17:15:normalizeOverHalfPi	16	static
-working.c:21:13:formatTime	48	static
-working.c:30:6:computeSinCos	72	dynamic

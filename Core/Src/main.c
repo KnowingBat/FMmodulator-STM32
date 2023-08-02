@@ -164,42 +164,6 @@ int main(void)
 		case init:
 			LEDToggling(LD2_GPIO_Port, LD2_Pin, 500);
 			messageRoutine(&sig);
-
-
-			if(request == 2){
-
-
-				if(value < MIN_FREQ || value > MAX_FREQ){
-					//HAL_UART_Trasmit(&huart2, msgErr);
-					break;
-				}
-				request++;
-			}
-
-			if(request == 3){
-
-
-
-			}
-
-			// Wait here for settings via UART
-			HAL_UART_Receive(&huart2, rxBuff, 10, 30);
-			if(sig.fFreq == 0){
-
-				break;
-			}
-
-			// Send UART message for fCentral
-
-			if(sig.fCentral == 0)
-				break;
-
-			// Send UART message for fRange
-
-			if(sig.fRange == 0)
-				break;
-
-
 			break;
 		case setup:
 			// In freqArray are stored all the period values for PWM
@@ -208,7 +172,7 @@ int main(void)
 			// Compute refresh rate for sampling timer
 			tSample = F_CLOCK/(N_POINTS * sig.fFreq); //20Hz -> 4101 --- 20kHz -> 4 refresh rate
 			// Set this refresh rate to TIMn dedicated to sampling
-			__HAL_TIM_SET_AUTORELOAD(&htim4, tSample);
+			//__HAL_TIM_SET_AUTORELOAD(&htim4, tSample);
 
 			#ifdef DEBUG
 			// To avoid warnings
