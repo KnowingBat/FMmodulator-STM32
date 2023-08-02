@@ -1,7 +1,7 @@
-main.c:78:6:LEDToggling	32	static
-main.c:89:6:LEDFixed	16	static
-main.c:93:13:resetSignal	24	static
-main.c:106:5:main	12320	static
+main.c:77:6:LEDToggling	32	static
+main.c:88:6:LEDFixed	16	static
+main.c:92:13:resetSignal	24	static
+main.c:105:5:main	12328	static
 main.c:213:6:SystemClock_Config	88	static
 main.c:255:6:HAL_GPIO_EXTI_Callback	24	static
 main.c:284:6:Error_Handler	4	static,ignoring_inline_asm

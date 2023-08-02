@@ -22,12 +22,11 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include "working.h"
-#include "messages.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "working.h"
+#include "messages.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -144,6 +143,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_DMA_Init();
   MX_TIM3_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 
   // Format the sin
@@ -172,7 +172,7 @@ int main(void)
 			// Compute refresh rate for sampling timer
 			tSample = F_CLOCK/(N_POINTS * sig.fFreq); //20Hz -> 4101 --- 20kHz -> 4 refresh rate
 			// Set this refresh rate to TIMn dedicated to sampling
-			//__HAL_TIM_SET_AUTORELOAD(&htim4, tSample);
+			__HAL_TIM_SET_AUTORELOAD(&htim4, tSample);
 
 			#ifdef DEBUG
 			// To avoid warnings

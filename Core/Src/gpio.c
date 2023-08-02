@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "gpio.h"
-#include "stm32f4xx.h"
 
 /* USER CODE BEGIN 0 */
 
