@@ -58,7 +58,7 @@ typedef enum{
 AppState appState = init;
 char txBuff[200];
 static uint8_t flFirst = 1;
-static double tSample;
+static float tSample;
 uint32_t freqArray[N_POINTS] = {0};
 
 /* USER CODE END PV */
@@ -89,6 +89,10 @@ void LEDFixed(GPIO_TypeDef *LEDPort, uint16_t LEDPin){
 	HAL_GPIO_WritePin(LEDPort, LEDPin, GPIO_PIN_SET);
 }
 
+void LEDOff(GPIO_TypeDef *LEDPort, uint16_t LEDPin){
+	HAL_GPIO_WritePin(LEDPort, LEDPin, GPIO_PIN_RESET);
+}
+
 static void resetSignal(Signal sig){
 	sig.fCentral = 0;
 	sig.fRange = 0;
@@ -113,9 +117,9 @@ int main(void)
 		  .fRange = 0
 		  };
 
-  double fullSin[N_POINTS];
-  double sin[N_POINTS/4];
-  double cos[N_POINTS/4];
+  float fullSin[N_POINTS]; //1024
+  float sin[N_POINTS/4]; // 256
+  float cos[N_POINTS/4]; //256
 
 
   resetSignal(sig);
@@ -147,7 +151,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   // Format the sin
-  computeSinCos(sin, cos, N_POINTS/4);
+  computeSinCos(sin, cos, N_POINTS);
   formatSin(fullSin, sin, cos);
 
   /* USER CODE END 2 */
@@ -164,6 +168,9 @@ int main(void)
 		case init:
 			LEDToggling(LD2_GPIO_Port, LD2_Pin, 500);
 			messageRoutine(&sig);
+
+			if(sig.fCentral != 0 && sig.fFreq != 0 && sig.fRange != 0)
+				appState = setup;
 			break;
 		case setup:
 			// In freqArray are stored all the period values for PWM
@@ -187,13 +194,13 @@ int main(void)
 
 			break;
 		case stop:
-
+			LEDOff(LD2_GPIO_Port, LD2_Pin);
 			break;
 		case reset:
 			// Stop PWM output
-			if(HAL_TIM_PWM_Stop_IT(&htim3, TIM_CHANNEL_1) != HAL_OK){
+			//if(HAL_TIM_PWM_Stop_IT(&htim3, TIM_CHANNEL_1) != HAL_OK){
 				// handle error
-			}
+			//}
 
 			// Reset signal
 			resetSignal(sig);
@@ -253,19 +260,19 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-  static uint8_t prevState = 0;
+  static uint8_t prevState = 1;
   uint8_t newState;
   static uint32_t startTime = 0;
   uint32_t endTime;
 
   if(GPIO_Pin != B1_Pin)
-	return;
+  	return;
 
   newState = HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin);
 
-  if(newState == 1 && prevState == 0){
+  if(newState == 0 && prevState == 1){
 	startTime = HAL_GetTick();
-  } else if(newState == 0 && prevState == 1) {
+  } else if(newState == 1 && prevState == 0) {
 	endTime = HAL_GetTick();
 	if((endTime - startTime) > 1000) //return to init
 		appState = reset;

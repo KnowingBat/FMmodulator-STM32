@@ -1,0 +1,6 @@
+working.c:17:14:normalizeOverHalfPi	24	static
+working.c:22:13:formatTime	32	static
+working.c:32:13:negateArray	48	dynamic
+working.c:46:6:computeSinCos	72	dynamic
+working.c:65:6:formatSin	2080	static
+working.c:95:6:convertToPWMlogic	24	static
