@@ -4,4 +4,4 @@
 #define MIN_FREQ         20
 #define MAX_FREQ			20000
 
-void messageRoutine(Signal *sig);
+void messageRoutine(Signal *sig, uint8_t *rxBuff);

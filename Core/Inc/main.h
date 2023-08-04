@@ -43,6 +43,7 @@ typedef struct{
 	uint32_t fFreq; // Frequency of the sinusoid in Hz
 }Signal;
 
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

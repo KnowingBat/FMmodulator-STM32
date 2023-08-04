@@ -49,15 +49,14 @@
 /* USER CODE BEGIN PV */
 typedef enum{
 	init = 0,
-	setup,
 	run,
 	stop,
-	reset
+	idle
 }AppState;
 
 AppState appState = init;
-char txBuff[200];
-static uint8_t flFirst = 1;
+uint8_t rxByte = 0;
+uint8_t rxBuff[10] = {0};
 static float tSample;
 uint32_t freqArray[N_POINTS] = {0};
 
@@ -109,12 +108,11 @@ static void resetSignal(Signal sig){
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  uint32_t value;
 
   Signal sig = {
-  		.fFreq = 0,
-		  .fCentral = 0,
-		  .fRange = 0
+  		.fFreq =2000, //Hz
+		  .fCentral = 100, //kHz
+		  .fRange = 5 //kHz
 		  };
 
   float fullSin[N_POINTS]; //1024
@@ -149,10 +147,16 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-
   // Format the sin
   computeSinCos(sin, cos, N_POINTS);
   formatSin(fullSin, sin, cos);
+
+  // Convert to PWM values
+  convertToPWMlogic(freqArray, fullSin, sig, N_POINTS);
+
+  // Set this refresh rate to TIM4 dedicated to sampling
+  tSample = F_CLOCK/(N_POINTS * sig.fFreq); //20Hz -> 4101 --- 20kHz -> 4 refresh rate
+  __HAL_TIM_SET_AUTORELOAD(&htim4, tSample);
 
   /* USER CODE END 2 */
 
@@ -166,49 +170,21 @@ int main(void)
 	// FSM management
 	switch(appState){
 		case init:
-			LEDToggling(LD2_GPIO_Port, LD2_Pin, 500);
-			messageRoutine(&sig);
-
-			if(sig.fCentral != 0 && sig.fFreq != 0 && sig.fRange != 0)
-				appState = setup;
-			break;
-		case setup:
-			// In freqArray are stored all the period values for PWM
-			convertToPWMlogic(freqArray, fullSin, sig, N_POINTS);
-
-			// Compute refresh rate for sampling timer
-			tSample = F_CLOCK/(N_POINTS * sig.fFreq); //20Hz -> 4101 --- 20kHz -> 4 refresh rate
-			// Set this refresh rate to TIMn dedicated to sampling
-			__HAL_TIM_SET_AUTORELOAD(&htim4, tSample);
-
-			#ifdef DEBUG
-			// To avoid warnings
-				UNUSED(tSample);
-			#endif
-			// Setup
-			//spaceSample = (float)periodFreqMax/periodFreqMin;
-
+			HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+			HAL_TIM_Base_Start_DMA(&htim4, freqArray, N_POINTS);
+			appState = run;
 			break;
 		case run:
+			LEDToggling(LD2_GPIO_Port, LD2_Pin, 200);
+			break;
+		case idle:
 			LEDFixed(LD2_GPIO_Port, LD2_Pin);
-
 			break;
 		case stop:
-			LEDOff(LD2_GPIO_Port, LD2_Pin);
+			HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
+			HAL_TIM_Base_Stop_DMA(&htim4);
+			appState = idle;
 			break;
-		case reset:
-			// Stop PWM output
-			//if(HAL_TIM_PWM_Stop_IT(&htim3, TIM_CHANNEL_1) != HAL_OK){
-				// handle error
-			//}
-
-			// Reset signal
-			resetSignal(sig);
-			appState = init;
-			break;
-	    //case error:
-		//	break;
-	}
   }
   /* USER CODE END 3 */
 }
@@ -258,7 +234,6 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
   static uint8_t prevState = 1;
   uint8_t newState;
@@ -268,18 +243,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
   if(GPIO_Pin != B1_Pin)
   	return;
 
-  newState = HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin);
-
-  if(newState == 0 && prevState == 1){
-	startTime = HAL_GetTick();
-  } else if(newState == 1 && prevState == 0) {
-	endTime = HAL_GetTick();
-	if((endTime - startTime) > 1000) //return to init
-		appState = reset;
-	else appState = (appState == stop) ? run:stop;
-  }
-
-  prevState = newState;
+  if(appState == run)
+  	appState = stop;
+  else if(appState == stop)
+  	appState = run;
 }
 
 /* USER CODE END 4 */
