@@ -97,7 +97,7 @@ void convertToPWMlogic(uint32_t *freqArray, const float *fullSin, Signal sig, ui
 	for(int i=0;i<size;i++){
 		tempFreq = sig.fCentral + fullSin[i] * sig.fRange;
 		// Now transform it to the ARR value for timer
-		freqArray[i] = F_CLOCK/tempFreq;
+		freqArray[i] = F_CLOCK/(tempFreq * 1000);
 	}
 }
 

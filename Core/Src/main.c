@@ -18,7 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "dma.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -110,7 +109,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   Signal sig = {
-  		.fFreq =2000, //Hz
+  		.fFreq = 10, //Hz
 		  .fCentral = 100, //kHz
 		  .fRange = 5 //kHz
 		  };
@@ -143,7 +142,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_DMA_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
@@ -170,21 +168,27 @@ int main(void)
 	// FSM management
 	switch(appState){
 		case init:
+			//__HAL_TIM_SET_AUTORELOAD(&htim3, freqArray[0]);
+			//__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, freqArray[0]/2);
 			HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
-			HAL_TIM_Base_Start_DMA(&htim4, freqArray, N_POINTS);
+			HAL_TIM_Base_Start_IT(&htim4);
 			appState = run;
 			break;
+
 		case run:
 			LEDToggling(LD2_GPIO_Port, LD2_Pin, 200);
 			break;
+
 		case idle:
 			LEDFixed(LD2_GPIO_Port, LD2_Pin);
 			break;
+
 		case stop:
 			HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
-			HAL_TIM_Base_Stop_DMA(&htim4);
+			HAL_TIM_Base_Stop_IT(&htim4);
 			appState = idle;
 			break;
+  }
   }
   /* USER CODE END 3 */
 }
@@ -235,10 +239,6 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-  static uint8_t prevState = 1;
-  uint8_t newState;
-  static uint32_t startTime = 0;
-  uint32_t endTime;
 
   if(GPIO_Pin != B1_Pin)
   	return;
@@ -247,6 +247,22 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
   	appState = stop;
   else if(appState == stop)
   	appState = run;
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+	static uint8_t i = 0;
+
+	if(htim->Instance != TIM4)
+		return;
+
+	// Update the ARR of TIM3 and his period to half way
+	__HAL_TIM_SET_AUTORELOAD(&htim3, freqArray[i]);
+	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, freqArray[i]/2);
+	i++;
+
+	if(i > (N_POINTS - 1))
+		i = 0;
+
 }
 
 /* USER CODE END 4 */
